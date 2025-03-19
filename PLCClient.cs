@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Timer = System.Threading.Timer;
 
 namespace WinFormsApp1321
 {
@@ -10,7 +11,9 @@ namespace WinFormsApp1321
         private readonly int plcPort;
         private TcpClient client;
         private NetworkStream stream;
-
+        private Timer heartbeatTimer; // 定时器发送心跳
+/*        private readonly byte[] heartbeatCommand = {0x50, 0x00, 0x00, 0xFF, 0xFF, 0x03, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x01, 0x14, 0x00, 0x00, 0x60, 0x08, 0x00, 0xA8, 0x01, 0x00, 0x00, 0x00 }; // 心跳指令
+*/
         public PLCClient(string ip, int port)
         {
             plcIp = ip;
@@ -26,6 +29,8 @@ namespace WinFormsApp1321
                 await client.ConnectAsync(plcIp, plcPort);
                 stream = client.GetStream();
                 Console.WriteLine("✅ 连接PLC成功");
+                // 启动心跳定时器，每隔1秒发送一次
+                heartbeatTimer = new Timer(async _ => await SendHeartbeatAsync(), null, 1000, 1000);
                 return true;
             }
             catch (Exception ex)
@@ -48,6 +53,41 @@ namespace WinFormsApp1321
             Console.WriteLine("🔌 已断开PLC连接");
         }
 
+        private int heartbeatRegister = 2144;
+        // 发送心跳指令 (异步)
+        private async Task SendHeartbeatAsync()
+        {
+            try
+            {
+                if (stream == null || !client.Connected)
+                {
+                    Console.WriteLine("⚠️ 连接断开，无法发送心跳");
+                    return;
+                }
+
+                // 1. 读取心跳值
+                int[] readValue = await ReadDRegisterAsync(heartbeatRegister, 1);
+                if (readValue == null || readValue.Length == 0)
+                {
+                    Console.WriteLine("❌ 读取心跳值失败");
+                    return;
+                }
+
+                int heartbeatValue = readValue[0]; // 获取 D2144 的当前值
+                heartbeatValue = (heartbeatValue % 60) + 1; // 1~60 循环
+
+                // 2. 写入心跳值
+                bool success = await WriteDRegisterAsync(heartbeatRegister, heartbeatValue);
+                if (success)
+                {
+                    Console.WriteLine($"💓 发送心跳成功，当前值: {heartbeatValue}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ 心跳发送失败: {ex.Message}");
+            }
+        }
 
         // 发送SLMP指令并接收响应 (异步)
         private async Task<byte[]> SendAndReceiveAsync(byte[] command)
@@ -173,7 +213,7 @@ namespace WinFormsApp1321
             0x50, 0x00, 0x00, 0xFF, 0xFF, 0x03, 0x00,  // 头部  
             0x0E, 0x00,  // 数据长度14
             0x00, 0x00,  // 保留
-            0x01, 0x04,  // 指令
+            0x01, 0x14,  // 指令
             0x00, 0x00,  // 子命令
             (byte)(address & 0xFF),          // 低字节
             (byte)((address >> 8) & 0xFF),   // 中间字节

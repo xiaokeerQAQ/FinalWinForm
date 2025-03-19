@@ -521,8 +521,9 @@ namespace WinFormsApp1321
             response.AddRange(SelectionForm.ToleranceBytes);
             response.AddRange(SelectionForm.CodeBytes);
             response.AddRange(SelectionForm.DefectPositionsBytes);
-            long timestamp = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(8)).ToUnixTimeSeconds();// 获取秒级时间戳
-            byte[] timestampBytes = BitConverter.GetBytes(timestamp);
+            DateTime now = DateTime.Now;
+            long timestamp = now.Ticks;  // 获取 100 纳秒级时间戳（long类型 8字节）
+            byte[] timestampBytes = BitConverter.GetBytes(timestamp); // 转换成小端存储的 8 字节数组
             response.AddRange(timestampBytes);
 
             // 计算数据段长度 (从 0xFA 之后到当前位置)
@@ -559,8 +560,9 @@ namespace WinFormsApp1321
             response.AddRange(SelectionForm.ToleranceBytes);
             response.AddRange(SelectionForm.CodeBytes);
             response.AddRange(SelectionForm.DefectPositionsBytes);
-            long timestamp = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(8)).ToUnixTimeSeconds();// 获取秒级时间戳
-            byte[] timestampBytes = BitConverter.GetBytes(timestamp);
+            DateTime now = DateTime.Now;
+            long timestamp = now.Ticks;  // 获取 100 纳秒级时间戳（long类型 8字节）
+            byte[] timestampBytes = BitConverter.GetBytes(timestamp); // 转换成小端存储的 8 字节数组
             response.AddRange(timestampBytes);
 
             // 计算数据段长度 (从 0xFA 之后到当前位置)
@@ -621,8 +623,9 @@ namespace WinFormsApp1321
                 response.AddRange(barcodeBytes);   // 条码数据
                 response.AddRange(batchLength);    // 批次号长度
                 response.AddRange(batchNumber);    // 批次号数据
-                long timestamp = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(8)).ToUnixTimeSeconds(); // 获取秒级时间戳
-                byte[] timestampBytes = BitConverter.GetBytes(timestamp);
+                DateTime now = DateTime.Now;
+                long timestamp = now.Ticks;  // 获取 100 纳秒级时间戳（long类型 8字节）
+                byte[] timestampBytes = BitConverter.GetBytes(timestamp); // 转换成小端存储的 8 字节数组
                 response.AddRange(timestampBytes);
 
                 // 5. 计算数据段长度 (包含 0xFB)
@@ -669,8 +672,9 @@ namespace WinFormsApp1321
                 response.AddRange(barcodeBytes);   // 条码数据
                 response.AddRange(batchLength);    // 批次号长度
                 response.AddRange(batchNumber);    // 批次号数据
-                long timestamp = DateTimeOffset.UtcNow.ToOffset(TimeSpan.FromHours(8)).ToUnixTimeSeconds(); // 获取秒级时间戳
-                byte[] timestampBytes = BitConverter.GetBytes(timestamp);
+                DateTime now = DateTime.Now;
+                long timestamp = now.Ticks;  // 获取 100 纳秒级时间戳（long类型 8字节）
+                byte[] timestampBytes = BitConverter.GetBytes(timestamp); // 转换成小端存储的 8 字节数组
                 response.AddRange(timestampBytes);
                 // 5. 计算数据段长度 (包含 0xFB)
                 int dataLength = response.Count - startIndex;
