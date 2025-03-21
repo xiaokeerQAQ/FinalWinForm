@@ -21,9 +21,17 @@ namespace WinFormsApp1321
         public static byte[] BarcodeBytes { get; set; } = Array.Empty<byte>();
         public static byte[] BatchNumber { get; set; } = Array.Empty<byte>();
 
+        private System.Windows.Forms.Timer heartbeatTimer;
+        private int heartbeatValue = 1;
+
         public Form1()
         {
             InitializeComponent();
+
+            heartbeatTimer = new System.Windows.Forms.Timer();
+            heartbeatTimer.Interval = 4000; // 1秒
+            heartbeatTimer.Tick += async (s, e) => await _plcClient.SendHeartbeatAsync();
+
             textBox1.ReadOnly = true;
             textBox1.Text = "";
             textBox2.Enabled = false;
@@ -358,24 +366,7 @@ namespace WinFormsApp1321
             label1.Text = "当前状态：待机状态";
         }
 
-       /* private void button3_Click(object sender, EventArgs e)
-        {
-            *//* // 复位状态
-             //isCalibrationMode = false;
-             isOn = false;
-
-
-             label1.Text = "当前状态：待机状态";
-
-
-             button1.Enabled = true;
-             button2.Enabled = true;
-             button1.Text = "自校准模式关闭";
-             button2.Text = "检测模式关闭";
-
-             MessageBox.Show("系统已恢复为待机状态！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-          //   StopCalibration(true);*//*
-        }*/
+      
 
 
         public bool confirmWriteSuccess;
@@ -587,6 +578,7 @@ namespace WinFormsApp1321
                 if (plcConnected)
                 {
                     Console.WriteLine("PLC 连接成功");
+                    heartbeatTimer.Start();
                 }
                 else
                 {
@@ -793,5 +785,8 @@ namespace WinFormsApp1321
         {
 
         }
+
+
+        
     }
 }

@@ -29,8 +29,8 @@ namespace WinFormsApp1321
                 await client.ConnectAsync(plcIp, plcPort);
                 stream = client.GetStream();
                 Console.WriteLine("✅ 连接PLC成功");
-                // 启动心跳定时器，每隔1秒发送一次
-                heartbeatTimer = new Timer(async _ => await SendHeartbeatAsync(), null, 1000, 1000);
+/*                // 启动心跳定时器，每隔1秒发送一次
+                heartbeatTimer = new Timer(_ => Task.Run(async () => await SendHeartbeatAsync()), null, 10000, 10000);*/
                 return true;
             }
             catch (Exception ex)
@@ -55,7 +55,7 @@ namespace WinFormsApp1321
 
         private int heartbeatRegister = 2144;
         // 发送心跳指令 (异步)
-        private async Task SendHeartbeatAsync()
+        public async Task SendHeartbeatAsync()
         {
             try
             {
@@ -98,6 +98,11 @@ namespace WinFormsApp1321
 
                 byte[] response = new byte[512]; // 预留足够空间
                 int bytesRead = await stream.ReadAsync(response, 0, response.Length);
+                if (bytesRead == 0) // 🔹 检测是否读到了数据
+                {
+                    Console.WriteLine("⚠️ 读取到 0 字节数据，可能是 PLC 没有响应！");
+                    return null; // **返回 null，而不是空数组**
+                }
                 Array.Resize(ref response, bytesRead); // 截取有效数据
                 return response;
             }
