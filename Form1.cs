@@ -22,7 +22,7 @@ namespace WinFormsApp1321
         public static byte[] BatchNumber { get; set; } = Array.Empty<byte>();
 
         private System.Windows.Forms.Timer heartbeatTimer;
-        private int heartbeatValue = 1;
+        
 
         public Form1()
         {
