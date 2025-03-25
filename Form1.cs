@@ -439,7 +439,18 @@ namespace WinFormsApp1321
         private async Task<bool> CheckTestResultWithTimeout(TimeSpan timeout)
         {
             Console.WriteLine("开始检查测试结果...");
-            var task = Task.Run(() => _tcpServer.ProcessFinalTestData());
+            Task<bool> task;
+
+            // 根据 TCPServer.Mode 选择调用不同的方法
+            if (TCPServer.Mode)
+            {
+                task = Task.Run(() => _tcpServer.ProcessFinalTestData());
+            }
+            else
+            {
+                task = Task.Run(() => _tcpServer.ProcessFinalFormalData());
+            }
+
             if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
             {
                 Console.WriteLine("测试结果已返回。");

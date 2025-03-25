@@ -447,6 +447,44 @@ namespace WinFormsApp1321
             }
         }
 
+        //检测模式结果
+        public async Task<bool> ProcessFinalFormalData(int timeoutMilliseconds = 60000, int checkInterval = 100)
+        {
+            int elapsedTime = 0;
+            Console.WriteLine("开始等待测试数据...");
+
+            // **等待数据就绪**
+            while ((aaData == null || bbData == null) && elapsedTime < timeoutMilliseconds)
+            {
+                await Task.Delay(checkInterval);
+                elapsedTime += checkInterval;
+            }
+
+            if (elapsedTime >= timeoutMilliseconds)
+            {
+                Console.WriteLine("等待数据超时，未收到检测数据！");
+                ResetTestStatus();
+                return false;
+            }
+
+            // **数据到达后，检查第一位是否是 0xA0**
+            bool isAA_OK = aaData[0] == 0xA0;
+            bool isBB_OK = bbData[0] == 0xA0;
+
+            if (isAA_OK && isBB_OK)
+            {
+                Console.WriteLine("检测通过：第一位均为 0xA0");
+                ResetTestStatus();
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("检测失败：第一位不全是 0xA0");
+                ResetTestStatus();
+                return false;
+            }
+        }
+
 
         //默认心跳响应
         private byte[] GenerateDefaultResponseAA()
